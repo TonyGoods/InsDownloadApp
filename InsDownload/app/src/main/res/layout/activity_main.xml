@@ -17,6 +17,8 @@
 
         <EditText
             android:id="@+id/web"
+            android:hint="请输入或粘贴Ins网址"
+            android:inputType="textMultiLine"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
     </LinearLayout>
@@ -32,4 +34,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="下载" />
+
+    <TextView
+        android:id="@+id/txtProcess"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
 </LinearLayout>
