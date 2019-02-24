@@ -50,13 +50,7 @@ public class MainActivity extends AppCompatActivity {
         txtProcess = findViewById(R.id.txtProcess);
         Button btnPaste = findViewById(R.id.btnPaste);
         btnPaste.setOnClickListener((v) -> {
-            ClipboardManager cm = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
-            assert cm != null;
-            ClipData data = cm.getPrimaryClip();
-            assert data != null;
-            ClipData.Item item = data.getItemAt(0);
-            String content = item.getText().toString();
-            web.setText(content);
+            getContentFromCopy();
         });
         Button btnMult = findViewById(R.id.btnDownload);
         btnMult.setOnClickListener(v -> {
@@ -68,6 +62,26 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        getContentFromCopy();
+    }
+
+    protected void getContentFromCopy() {
+        ClipboardManager cm = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+        if (cm == null) {
+            return;
+        }
+        ClipData data = cm.getPrimaryClip();
+        if (data == null) {
+            return;
+        }
+        ClipData.Item item = data.getItemAt(0);
+        String content = item.getText().toString();
+        web.setText(content);
+    }
+
     @SuppressLint("StaticFieldLeak")
     protected void download() {
         String webUrl = web.getText().toString();
@@ -75,6 +89,12 @@ public class MainActivity extends AppCompatActivity {
             @Override
             protected Object doInBackground(Object[] objects) {
                 try {
+                    if (ContextCompat.checkSelfPermission(MainActivity.this,
+                            Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                            != PackageManager.PERMISSION_GRANTED) {
+                        ActivityCompat.requestPermissions(MainActivity.this,
+                                new String[]{Manifest.permission.CALL_PHONE}, 1);
+                    }
                     URL url = new URL(webUrl);
                     HttpsURLConnection httpsURLConnection = (HttpsURLConnection) url.openConnection();
                     if (httpsURLConnection.getResponseCode() == 200) {
@@ -170,13 +190,6 @@ public class MainActivity extends AppCompatActivity {
                 InputStream inputStream = connection.getInputStream();
                 bitmap = BitmapFactory.decodeStream(inputStream);
                 inputStream.close();
-                if (ContextCompat.checkSelfPermission(MainActivity.this,
-                        Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                        != PackageManager.PERMISSION_GRANTED) {
-                    ActivityCompat.requestPermissions(MainActivity.this,
-                            new String[]{Manifest.permission.CALL_PHONE}, 1);
-                }
-
                 File file = new File(Environment.getExternalStorageDirectory().getPath() + "/AMyInstagram");
                 if (!file.exists()) {
                     if (!file.mkdir()) {
